@@ -1,0 +1,5 @@
+# Project exclude paths
+/seashop_api/target/
+/seashop_common/target/
+/seashop_dao/target/
+/seashop_service/target/

@@ -1,0 +1,9 @@
+package com.haojing.service.impl;
+
+import com.haojing.service.OrderService;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderServiceImpl implements OrderService {
+
+}
