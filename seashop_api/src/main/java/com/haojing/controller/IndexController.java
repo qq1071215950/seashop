@@ -6,10 +6,13 @@ import com.haojing.enums.YesOrNo;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.CarouselService;
 import com.haojing.service.CategoryService;
+import com.haojing.vo.CategoryVO;
+import com.haojing.vo.NewItemsVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,8 +52,14 @@ public class IndexController {
     public ResponseResult subCat(
             @ApiParam(name = "rootCatId", value = "一级分类id", required = true)
             @PathVariable Integer rootCatId) {
-
-        return ResponseResult.ok();
+        if (rootCatId == null) {
+            return ResponseResult.errorMsg("分类不存在");
+        }
+        List<CategoryVO> list = categoryService.getSubCatList(rootCatId);
+        if (CollectionUtils.isEmpty(list)){
+            return ResponseResult.errorMsg("分类信息不存在");
+        }
+        return ResponseResult.ok(list);
     }
 
     @ApiOperation(value = "查询每个一级分类下的最新6条商品数据", notes = "查询每个一级分类下的最新6条商品数据", httpMethod = "GET")
@@ -58,8 +67,13 @@ public class IndexController {
     public ResponseResult sixNewItems(
             @ApiParam(name = "rootCatId", value = "一级分类id", required = true)
             @PathVariable Integer rootCatId) {
-
-
-        return ResponseResult.ok();
+        if (rootCatId == null) {
+            return ResponseResult.errorMsg("分类不存在");
+        }
+        List<NewItemsVO> list = categoryService.getSixNewItemsLazy(rootCatId);
+        if (CollectionUtils.isEmpty(list)){
+            return ResponseResult.errorMsg("该分类下目前暂时没有商品信息，请进行其它的操作");
+        }
+        return ResponseResult.ok(list);
     }
 }
