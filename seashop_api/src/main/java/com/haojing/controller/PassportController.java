@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 @Api(value = "注册登录", tags = {"用于注册登录的相关接口"})
 @RestController
 @RequestMapping("passport")
+@CrossOrigin
 public class PassportController {
 
     @Autowired
@@ -134,7 +135,6 @@ public class PassportController {
     public ResponseResult logout(@RequestParam String userId,
                                   HttpServletRequest request,
                                   HttpServletResponse response) {
-
         // 清除用户的相关信息的cookie
         CookieUtils.deleteCookie(request, response, "user");
 

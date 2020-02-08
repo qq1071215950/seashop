@@ -27,4 +27,7 @@ public interface UserService {
      * @return
      */
     Users queryUserForLogin(String username, String password) throws Exception;
+
+
+    Users selectById(String userId);
 }

@@ -88,4 +88,17 @@ public class UserServiceImpl implements UserService {
 
         return result;
     }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Users selectById(String userId) {
+     /*   Example example = new Example(Users.class);
+        Example.Criteria criteria = example.createCriteria();
+        // 构造查询条件
+        criteria.andEqualTo("id", userId);
+        // 进行查询
+        Users users = (Users) usersMapper.selectByExample(example);*/
+        Users users = usersMapper.selectByPrimaryKey(userId);
+        return users;
+    }
 }
