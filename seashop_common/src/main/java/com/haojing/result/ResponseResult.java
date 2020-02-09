@@ -55,6 +55,9 @@ public class ResponseResult {
     public static ResponseResult ok(String msg) {
         return new ResponseResult(200,msg,null);
     }
+    public static ResponseResult ok(String msg, Object data) {
+        return new ResponseResult(200,msg,data);
+    }
     public static ResponseResult errorMsg(String msg) {
         return new ResponseResult(500, msg, null);
     }
