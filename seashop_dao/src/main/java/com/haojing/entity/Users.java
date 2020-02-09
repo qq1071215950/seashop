@@ -72,6 +72,10 @@ public class Users {
     private Date updatedTime;
 
     /**
+     * 用户类型
+     */
+    private Integer type;
+    /**
      * 获取主键id 用户id
      *
      * @return id - 主键id 用户id
@@ -285,5 +289,13 @@ public class Users {
      */
     public void setUpdatedTime(Date updatedTime) {
         this.updatedTime = updatedTime;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 }

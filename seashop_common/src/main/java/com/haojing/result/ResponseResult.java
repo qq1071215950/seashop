@@ -52,7 +52,9 @@ public class ResponseResult {
     public static ResponseResult ok() {
         return new ResponseResult(null);
     }
-    
+    public static ResponseResult ok(String msg) {
+        return new ResponseResult(200,msg,null);
+    }
     public static ResponseResult errorMsg(String msg) {
         return new ResponseResult(500, msg, null);
     }

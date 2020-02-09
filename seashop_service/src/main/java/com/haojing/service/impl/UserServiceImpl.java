@@ -3,6 +3,7 @@ package com.haojing.service.impl;
 import com.haojing.bo.UserBO;
 import com.haojing.entity.Users;
 import com.haojing.enums.Sex;
+import com.haojing.enums.UserTypeEnum;
 import com.haojing.mapper.UsersMapper;
 import com.haojing.service.UserService;
 import com.haojing.utlis.DateUtil;
@@ -65,9 +66,9 @@ public class UserServiceImpl implements UserService {
         user.setBirthday(DateUtil.stringToDate("1900-01-01"));
         // 默认性别为 保密
         user.setSex(Sex.secret.type);
-
         user.setCreatedTime(new Date());
         user.setUpdatedTime(new Date());
+        user.setType(UserTypeEnum.NORNAL_USER.getType());
 
         usersMapper.insert(user);
 
