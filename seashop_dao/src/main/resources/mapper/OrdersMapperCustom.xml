@@ -149,7 +149,7 @@
         DESC
     </select>
 
-    <select id="queryOrders" parameterType="Map" resultType="com.haojing.vo.MyOrdersVO">
+    <select id="queryOrders" parameterType="Map" resultMap="myOrdersVO">
         SELECT
         od.id as orderId,
         od.created_time as createdTime,

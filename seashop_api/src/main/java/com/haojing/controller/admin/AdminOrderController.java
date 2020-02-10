@@ -49,6 +49,7 @@ public class AdminOrderController extends BaseController {
         if (pageSize == null) {
             pageSize = COMMON_PAGE_SIZE;
         }
+        // todo vo对象需要加入用户信息
         PagedGridResult grid = orderService.queryOrders(orderStatus, page, pageSize);
         if (grid == null || CollectionUtils.isEmpty(grid.getRows())){
             return ResponseResult.errorMsg("目前还没有订单");

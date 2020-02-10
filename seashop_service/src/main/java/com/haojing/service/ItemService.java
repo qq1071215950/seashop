@@ -118,4 +118,12 @@ public interface ItemService {
      * @param buyCounts
      */
     void decreaseItemSpecStock(String itemSpecId, int buyCounts);
+
+
+    /**
+     * 商品的上下架
+     * @param itemIds
+     * @param type
+     */
+    void upOrDownItems(List<String> itemIds, Integer type);
 }

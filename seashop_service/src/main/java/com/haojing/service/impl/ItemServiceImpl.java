@@ -202,6 +202,34 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void upOrDownItems(List<String> itemIds, Integer type) {
+        // todo 该方式在实际中不会用，性能低下
+        // 1、商品商家
+        if (type == 1){
+            for (String itemsId: itemIds) {
+                Items items = new Items();
+                items.setId(itemsId);
+                items.setOnOffStatus(1);
+                items.setUpdatedTime(new Date());
+                itemsMapper.updateByPrimaryKeySelective(items);
+            }
+        }
+        // 2：商品下架
+        if (type == 2){
+            for (String itemsId: itemIds) {
+                Items items = new Items();
+                items.setId(itemsId);
+                items.setOnOffStatus(2);
+                items.setUpdatedTime(new Date());
+                itemsMapper.updateByPrimaryKeySelective(items);
+            }
+        }
+
+
+    }
+
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);
         PagedGridResult grid = new PagedGridResult();
