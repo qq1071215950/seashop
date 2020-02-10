@@ -32,7 +32,7 @@ public class MyCommentsController extends BaseController {
     public MyOrdersService myOrdersService;
 
 
-    @ApiOperation(value = "查询订单列表", notes = "查询订单列表", httpMethod = "GET")
+    @ApiOperation(value = "查询订单评论列表", notes = "查询订单列表", httpMethod = "GET")
     @GetMapping("/pending")
     public ResponseResult pending(
             @ApiParam(name = "userId", value = "用户id", required = true)

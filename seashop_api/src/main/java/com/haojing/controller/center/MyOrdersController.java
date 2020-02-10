@@ -1,12 +1,18 @@
 package com.haojing.controller.center;
 
 import com.haojing.controller.BaseController;
+import com.haojing.entity.Orders;
+import com.haojing.result.PagedGridResult;
 import com.haojing.result.ResponseResult;
+import com.haojing.service.center.MyOrdersService;
+import com.haojing.vo.OrderStatusCountsVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 @Api(value = "用户中心我的订单", tags = {"用户中心我的订单相关接口"})
@@ -14,17 +20,23 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("myorders")
 public class MyOrdersController extends BaseController {
 
-    @ApiOperation(value = "获得订单状态数概况", notes = "获得订单状态数概况", httpMethod = "POST")
-    @PostMapping("/statusCounts")
+    @Autowired
+    private MyOrdersService myOrdersService;
+
+    @ApiOperation(value = "获得订单状态数概况", notes = "获得订单状态数概况", httpMethod = "GET")
+    @GetMapping("/statusCounts")
     public ResponseResult statusCounts(
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId) {
-
-        return ResponseResult.ok();
+        if (StringUtils.isBlank(userId)) {
+            return ResponseResult.errorMsg(null);
+        }
+        OrderStatusCountsVO result = myOrdersService.getOrderStatusCounts(userId);
+        return ResponseResult.ok(result);
     }
 
-    @ApiOperation(value = "查询订单列表", notes = "查询订单列表", httpMethod = "POST")
-    @PostMapping("/query")
+    @ApiOperation(value = "查询订单列表", notes = "查询订单列表", httpMethod = "GET")
+    @GetMapping("/query")
     public ResponseResult query(
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId,
@@ -35,18 +47,30 @@ public class MyOrdersController extends BaseController {
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
 
-
-        return ResponseResult.ok();
+        if (StringUtils.isBlank(userId)) {
+            return ResponseResult.errorMsg(null);
+        }
+        if (page == null) {
+            page = 1;
+        }
+        if (pageSize == null) {
+            pageSize = COMMON_PAGE_SIZE;
+        }
+        PagedGridResult grid = myOrdersService.queryMyOrders(userId, orderStatus, page, pageSize);
+        return ResponseResult.ok(grid);
     }
 
 
     // 商家发货没有后端，所以这个接口仅仅只是用于模拟
-    @ApiOperation(value="商家发货", notes="商家发货", httpMethod = "GET")
-    @GetMapping("/deliver")
+    @ApiOperation(value="商家发货", notes="商家发货", httpMethod = "POST")
+    @PostMapping("/deliver")
     public ResponseResult deliver(
             @ApiParam(name = "orderId", value = "订单id", required = true)
             @RequestParam String orderId) throws Exception {
-
+        if (StringUtils.isBlank(orderId)) {
+            return ResponseResult.errorMsg("订单ID不能为空");
+        }
+        myOrdersService.updateDeliverOrderStatus(orderId);
         return ResponseResult.ok();
     }
 
@@ -59,8 +83,14 @@ public class MyOrdersController extends BaseController {
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId) throws Exception {
 
-
-
+        Orders order = myOrdersService.queryMyOrder(userId, orderId);
+        if (order == null) {
+            return ResponseResult.errorMsg("订单不存在！");
+        }
+        boolean res = myOrdersService.updateReceiveOrderStatus(orderId);
+        if (!res) {
+            return ResponseResult.errorMsg("订单确认收货失败！");
+        }
         return ResponseResult.ok();
     }
 
@@ -71,25 +101,20 @@ public class MyOrdersController extends BaseController {
             @RequestParam String orderId,
             @ApiParam(name = "userId", value = "用户id", required = true)
             @RequestParam String userId) throws Exception {
+        Orders order = myOrdersService.queryMyOrder(userId, orderId);
+        if (order == null) {
+            return ResponseResult.errorMsg("订单不存在！");
+        }
 
+        boolean res = myOrdersService.deleteOrder(userId, orderId);
+        if (!res) {
+            return ResponseResult.errorMsg("订单删除失败！");
+        }
 
         return ResponseResult.ok();
     }
 
-
-
-    /**
-     * 用于验证用户和订单是否有关联关系，避免非法用户调用
-     * @return
-     */
-//    private ResponseResult checkUserOrder(String userId, String orderId) {
-//        Orders order = myOrdersService.queryMyOrder(userId, orderId);
-//        if (order == null) {
-//            return ResponseResult.errorMsg("订单不存在！");
-//        }
-//        return ResponseResult.ok();
-//    }
-
+    
     @ApiOperation(value = "查询订单动向", notes = "查询订单动向", httpMethod = "POST")
     @PostMapping("/trend")
     public ResponseResult trend(
@@ -100,7 +125,20 @@ public class MyOrdersController extends BaseController {
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
 
-        return ResponseResult.ok();
+        if (StringUtils.isBlank(userId)) {
+            return ResponseResult.errorMsg(null);
+        }
+        if (page == null) {
+            page = 1;
+        }
+        if (pageSize == null) {
+            pageSize = COMMON_PAGE_SIZE;
+        }
+        PagedGridResult grid = myOrdersService.getOrdersTrend(userId, page, pageSize);
+        if (grid == null || CollectionUtils.isEmpty(grid.getRows())){
+            return ResponseResult.ok("您暂时还没有相关的订单信息");
+        }
+        return ResponseResult.ok(grid);
     }
 
 }
