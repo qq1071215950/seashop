@@ -15,4 +15,11 @@ public interface OrdersMapperCustom {
 
     public List<OrderStatus> getMyOrderTrend(@Param("paramsMap") Map<String, Object> map);
 
+
+    /**
+     * 查询相关订单列表
+     * @param map
+     * @return
+     */
+    List<MyOrdersVO> queryOrders(@Param("paramsMap") Map<String, Object> map);
 }

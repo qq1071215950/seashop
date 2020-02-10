@@ -1,5 +1,7 @@
 package com.haojing.service.impl;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.haojing.bo.SubmitOrderBO;
 import com.haojing.domain.ItemsCustom;
 import com.haojing.entity.*;
@@ -8,21 +10,32 @@ import com.haojing.enums.YesOrNo;
 import com.haojing.mapper.OrderItemsMapper;
 import com.haojing.mapper.OrderStatusMapper;
 import com.haojing.mapper.OrdersMapper;
+import com.haojing.mapper.OrdersMapperCustom;
+import com.haojing.result.PagedGridResult;
 import com.haojing.service.AddressService;
 import com.haojing.service.ItemService;
 import com.haojing.service.OrderService;
+import com.haojing.service.center.MyOrdersService;
 import com.haojing.vo.MerchantOrdersVO;
+import com.haojing.vo.MyOrdersVO;
 import com.haojing.vo.OrderVO;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    @Autowired
+    private MyOrdersService myOrdersService;
 
     @Autowired
     private OrdersMapper ordersMapper;
@@ -41,6 +54,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private Sid sid;
+
+    @Autowired
+    private OrdersMapperCustom ordersMapperCustom;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
@@ -152,5 +168,42 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderStatus queryOrderStatusInfo(String orderId) {
         return orderStatusMapper.selectByPrimaryKey(orderId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void deliverOrderPacth(List<String> orderIds) {
+        // todo 需要系统的性能，该方法实在不可取，偷懒了哈哈哈哈哈
+        for (String orderId: orderIds) {
+            OrderStatus updateOrder = new OrderStatus();
+            Example example = new Example(OrderStatus.class);
+            Example.Criteria criteria = example.createCriteria();
+            criteria.andEqualTo("orderId", orderId);
+            criteria.andEqualTo("orderStatus", OrderStatusEnum.WAIT_DELIVER.type);
+            updateOrder.setOrderStatus(OrderStatusEnum.WAIT_RECEIVE.type);
+            updateOrder.setDeliverTime(new Date());
+            orderStatusMapper.updateByExampleSelective(updateOrder, example);
+        }
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult queryOrders(Integer orderStatus, Integer page, Integer pageSize) {
+        Map<String, Object> map = new HashMap<>();
+        if (orderStatus != null) {
+            map.put("orderStatus", orderStatus);
+        }
+        PageHelper.startPage(page, pageSize);
+        List<MyOrdersVO> list = ordersMapperCustom.queryOrders(map);
+        return setterPagedGrid(list, page);
+    }
+    private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
+        PageInfo<?> pageList = new PageInfo<>(list);
+        PagedGridResult grid = new PagedGridResult();
+        grid.setPage(page);
+        grid.setRows(list);
+        grid.setTotal(pageList.getPages());
+        grid.setRecords(pageList.getTotal());
+        return grid;
     }
 }

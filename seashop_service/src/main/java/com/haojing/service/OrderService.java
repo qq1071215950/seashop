@@ -2,7 +2,10 @@ package com.haojing.service;
 
 import com.haojing.bo.SubmitOrderBO;
 import com.haojing.entity.OrderStatus;
+import com.haojing.result.PagedGridResult;
 import com.haojing.vo.OrderVO;
+
+import java.util.List;
 
 public interface OrderService {
 
@@ -28,4 +31,21 @@ public interface OrderService {
      * @return
      */
     OrderStatus queryOrderStatusInfo(String orderId);
+
+
+    /**
+     * 商家批量发货
+     * @param orderIds
+     */
+    void deliverOrderPacth(List<String> orderIds);
+
+
+    /**
+     * 分页条件查询订单列表
+     * @param orderStatus
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PagedGridResult queryOrders(Integer orderStatus, Integer page, Integer pageSize);
 }
