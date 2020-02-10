@@ -44,7 +44,7 @@ public class CenterUserController extends BaseController {
             HttpServletRequest request, HttpServletResponse response) {
 
 
-        // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
+        // TODO 后续要改，增加令牌token，会整合进redis
 
         return ResponseResult.ok();
     }
