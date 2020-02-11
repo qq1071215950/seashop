@@ -2,6 +2,10 @@ package com.haojing.service.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.haojing.bo.ItemBO;
+import com.haojing.bo.ItemsImgBO;
+import com.haojing.bo.ItemsParamBO;
+import com.haojing.bo.ItemsSpecBO;
 import com.haojing.domain.ItemsCustom;
 import com.haojing.domain.ItemsImgCustom;
 import com.haojing.domain.ItemsParamCustom;
@@ -17,6 +21,7 @@ import com.haojing.vo.CommentLevelCountsVO;
 import com.haojing.vo.ItemCommentVO;
 import com.haojing.vo.SearchItemsVO;
 import com.haojing.vo.ShopcartVO;
+import org.n3r.idworker.Sid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,6 +46,8 @@ public class ItemServiceImpl implements ItemService {
     private ItemsCommentsMapper itemsCommentsMapper;
     @Autowired
     private ItemsMapperCustom itemsMapperCustom;
+    @Autowired
+    private Sid sid;
 
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -236,6 +243,60 @@ public class ItemServiceImpl implements ItemService {
         Items items = itemsMapper.selectByPrimaryKey(itemId);
         return items == null ? false : true;
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void addItems(ItemBO itemBO) {
+        Items items = new Items();
+        String itemId = sid.nextShort();
+        BeanUtils.copyProperties(itemBO, items);
+        items.setId(itemId);
+        items.setSellCounts(0);
+        items.setCreatedTime(new Date());
+        items.setUpdatedTime(new Date());
+        int i = itemsMapper.insert(items);
+        if (i != 1){
+            throw new RuntimeException("添加商品失败");
+        }
+        // 商品参数数据
+        ItemsParamBO itemsParamBO = itemBO.getItemsParamBO();
+        String pid = sid.nextShort();
+        ItemsParam itemsParam = new ItemsParam();
+        BeanUtils.copyProperties(itemsParamBO, itemsParam);
+        itemsParam.setId(pid);
+        itemsParam.setItemId(itemId);
+        itemsParam.setCreatedTime(new Date());
+        itemsParam.setUpdatedTime(new Date());
+        int i1 = itemsParamMapper.insert(itemsParam);
+        if (i1 != 1){
+            throw new RuntimeException("添加商品参数失败");
+        }
+        // 商品规格数据
+        List<ItemsSpecBO> list = itemBO.getItemsSpecBOList();
+        for (ItemsSpecBO itemsSpecBO : list){
+            String specId = sid.nextShort();
+            ItemsSpec itemsSpec = new ItemsSpec();
+            BeanUtils.copyProperties(itemsSpecBO, itemsSpec);
+            itemsSpec.setId(specId);
+            itemsSpec.setItemId(itemId);
+            itemsSpec.setCreatedTime(new Date());
+            itemsSpec.setUpdatedTime(new Date());
+            itemsSpecMapper.insert(itemsSpec);
+        }
+        // 商品图片信息
+        List<ItemsImgBO> imgBOList = itemBO.getImgBOList();
+        for (ItemsImgBO itemsImgBO : imgBOList) {
+            String picId = sid.nextShort();
+            ItemsImg itemsImg = new ItemsImg();
+            BeanUtils.copyProperties(itemsImgBO, itemsImg);
+            itemsImg.setId(picId);
+            itemsImg.setItemId(itemId);
+            itemsImg.setCreatedTime(new Date());
+            itemsImg.setUpdatedTime(new Date());
+            itemsImgMapper.insert(itemsImg);
+        }
+    }
+
 
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);

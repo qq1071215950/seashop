@@ -1,5 +1,8 @@
 package com.haojing.controller.admin;
 
+import com.haojing.bo.ItemBO;
+import com.haojing.bo.ItemsParamBO;
+import com.haojing.bo.ItemsSpecBO;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.ItemService;
 import com.haojing.service.UploadService;
@@ -28,8 +31,44 @@ public class AdminItemController {
 
     @ApiOperation(value = "添加商品", notes = "添加上坪", httpMethod = "POST")
     @PostMapping("/addItem")
-    public ResponseResult addTtem() {
-        return null;
+    public ResponseResult addTtem(@RequestBody ItemBO itemBO) {
+        if (itemBO == null){
+            return ResponseResult.errorMsg("商品信息不能为空");
+        }
+        if (itemBO.getItemsParamBO() == null || CollectionUtils.isEmpty(itemBO.getItemsSpecBOList()) ||CollectionUtils.isEmpty(itemBO.getImgBOList())){
+            return ResponseResult.errorMsg("商品的参数不能为空或者商品规格参数不能为空或者商品图片信息不能为空");
+        }
+        // todo 做些关键参数的校验
+        ItemsParamBO itemsParamBO = itemBO.getItemsParamBO();
+        if (StringUtils.isBlank(itemsParamBO.getBrand())){
+            return ResponseResult.errorMsg("商品的商标信息不能为空");
+        }
+        if (StringUtils.isBlank(itemsParamBO.getFactoryAddress())){
+            return ResponseResult.errorMsg("商家厂址信息不能为空");
+        }
+        if (StringUtils.isBlank(itemsParamBO.getFactoryName())){
+            return ResponseResult.errorMsg("厂家名称不能为空");
+        }
+        if (StringUtils.isBlank(itemsParamBO.getStorageMethod())){
+            return ResponseResult.errorMsg("存储方式不能为空");
+        }
+        if (StringUtils.isBlank(itemsParamBO.getFootPeriod())){
+            return ResponseResult.errorMsg("食品的保质期不能为空");
+        }
+        List<ItemsSpecBO> specBOList = itemBO.getItemsSpecBOList();
+        for (ItemsSpecBO itemsSpecBO: specBOList) {
+            if (StringUtils.isBlank(itemsSpecBO.getName())){
+                return ResponseResult.errorMsg("商品规格名称不能为空");
+            }
+            if (itemsSpecBO.getStock() == null){
+                return ResponseResult.errorMsg("商品库存不能为空");
+            }
+            if (itemsSpecBO.getPriceNormal() == null){
+                return ResponseResult.errorMsg("商品的价格不能为空");
+            }
+        }
+        itemService.addItems(itemBO);
+        return ResponseResult.ok();
     }
 
     @ApiOperation(value = "商品图片上传", notes = "商品图片上传", httpMethod = "POST")

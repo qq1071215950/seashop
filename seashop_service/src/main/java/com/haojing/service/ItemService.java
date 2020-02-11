@@ -1,5 +1,6 @@
 package com.haojing.service;
 
+import com.haojing.bo.ItemBO;
 import com.haojing.domain.ItemsCustom;
 import com.haojing.domain.ItemsImgCustom;
 import com.haojing.domain.ItemsParamCustom;
@@ -134,4 +135,11 @@ public interface ItemService {
      * @return
      */
     Boolean queryItemIsExit(String itemId);
+
+
+    /**
+     * 添加商品
+     * @param itemBO
+     */
+    void addItems(ItemBO itemBO);
 }
