@@ -49,3 +49,6 @@ mybatis:
 pagehelper:
   helperDialect: mysql
   supportMethodsArguments: true
+logging:
+  level:
+    com.haojing.mapper: DEBUG

@@ -1,5 +1,6 @@
 package com.haojing.service;
 
+import com.haojing.bo.CategoryBO;
 import com.haojing.entity.Category;
 import com.haojing.vo.CategoryVO;
 import com.haojing.vo.NewItemsVO;
@@ -36,4 +37,17 @@ public interface CategoryService {
      * @return
      */
     Boolean queryCategoryIsExit(String catId);
+
+    /**
+     * 添加分类
+     * @param categoryBO
+     */
+    void addCategory(CategoryBO categoryBO);
+
+
+    /**
+     * 通过id删除分类信息
+     * @param categoryId
+     */
+    void deleteCategoryById(Integer categoryId);
 }

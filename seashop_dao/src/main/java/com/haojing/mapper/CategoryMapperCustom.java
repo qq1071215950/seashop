@@ -1,5 +1,6 @@
 package com.haojing.mapper;
 
+import com.haojing.entity.Category;
 import com.haojing.vo.CategoryVO;
 
 import com.haojing.vo.NewItemsVO;
@@ -13,4 +14,7 @@ public interface CategoryMapperCustom {
     public List<CategoryVO> getSubCatList(Integer rootCatId);
 
     public List<NewItemsVO> getSixNewItemsLazy(@Param("paramsMap") Map<String, Object> map);
+
+
+    int insertCategory(Category category);
 }
