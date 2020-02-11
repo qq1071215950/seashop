@@ -48,5 +48,12 @@ public class CategoryServiceImpl implements CategoryService {
         map.put("rootCatId", rootCatId);
         return categoryMapperCustom.getSixNewItemsLazy(map);
     }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Boolean queryCategoryIsExit(String catId) {
+        Category category = categoryMapper.selectByPrimaryKey(catId);
+        return category==null ? false: true;
+    }
 }
 

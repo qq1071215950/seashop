@@ -126,4 +126,12 @@ public interface ItemService {
      * @param type
      */
     void upOrDownItems(List<String> itemIds, Integer type);
+
+
+    /**
+     * 查询商品是否存在
+     * @param itemId
+     * @return
+     */
+    Boolean queryItemIsExit(String itemId);
 }

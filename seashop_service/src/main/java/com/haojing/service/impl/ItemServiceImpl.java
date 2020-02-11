@@ -230,6 +230,13 @@ public class ItemServiceImpl implements ItemService {
 
     }
 
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public Boolean queryItemIsExit(String itemId) {
+        Items items = itemsMapper.selectByPrimaryKey(itemId);
+        return items == null ? false : true;
+    }
+
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);
         PagedGridResult grid = new PagedGridResult();

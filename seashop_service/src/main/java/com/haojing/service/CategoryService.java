@@ -28,4 +28,12 @@ public interface CategoryService {
      * @return
      */
     List<NewItemsVO> getSixNewItemsLazy(@Param("rootCatId") Integer rootCatId);
+
+
+    /**
+     * 查询分类信息是否存在
+     * @param catId
+     * @return
+     */
+    Boolean queryCategoryIsExit(String catId);
 }

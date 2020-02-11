@@ -1,7 +1,5 @@
 package com.haojing.controller.admin;
 
-import com.haojing.entity.Carousel;
-import com.haojing.enums.YesOrNo;
 import com.haojing.result.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("category")
 @CrossOrigin
 public class AdminCategoryController {
+
 
     @ApiOperation(value = "添加一级分类", notes = "添加一级分类", httpMethod = "POST")
     @PostMapping("/add")
