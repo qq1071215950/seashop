@@ -5,6 +5,7 @@ import com.haojing.controller.BaseController;
 import com.haojing.entity.Users;
 import com.haojing.resource.FileUpload;
 import com.haojing.result.ResponseResult;
+import com.haojing.service.UploadService;
 import com.haojing.service.center.CenterUserService;
 import com.haojing.utlis.CookieUtils;
 import com.haojing.utlis.DateUtil;
@@ -40,7 +41,7 @@ public class CenterUserController extends BaseController {
     private CenterUserService centerUserService;
 
     @Autowired
-    private FileUpload fileUpload;
+    private UploadService uploadService;
 
     @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
     @PostMapping("uploadFace")
@@ -50,86 +51,16 @@ public class CenterUserController extends BaseController {
             @ApiParam(name = "file", value = "用户头像", required = true)
                     MultipartFile file,
             HttpServletRequest request, HttpServletResponse response) {
-        // .sh .php
-
-        // 定义头像保存的地址
-//        String fileSpace = IMAGE_USER_FACE_LOCATION;
-        String fileSpace = fileUpload.getImageUserFaceLocation();
-        // 在路径上为每一个用户增加一个userid，用于区分不同用户上传
-        String uploadPathPrefix = File.separator + userId;
-
-        // 开始文件上传
-        if (file != null) {
-            FileOutputStream fileOutputStream = null;
-            try {
-                // 获得文件上传的文件名称
-                String fileName = file.getOriginalFilename();
-
-                if (StringUtils.isNotBlank(fileName)) {
-
-                    // 文件重命名  imooc-face.png -> ["imooc-face", "png"]
-                    String fileNameArr[] = fileName.split("\\.");
-
-                    // 获取文件的后缀名
-                    String suffix = fileNameArr[fileNameArr.length - 1];
-
-                    if (!suffix.equalsIgnoreCase("png") &&
-                            !suffix.equalsIgnoreCase("jpg") &&
-                            !suffix.equalsIgnoreCase("jpeg") ) {
-                        return ResponseResult.errorMsg("图片格式不正确！");
-                    }
-
-                    // face-{userid}.png
-                    // 文件名称重组 覆盖式上传，增量式：额外拼接当前时间
-                    String newFileName = "face-" + userId + "." + suffix;
-
-                    // 上传的头像最终保存的位置
-                    String finalFacePath = fileSpace + uploadPathPrefix + File.separator + newFileName;
-                    // 用于提供给web服务访问的地址
-                    uploadPathPrefix += ("/" + newFileName);
-
-                    File outFile = new File(finalFacePath);
-                    if (outFile.getParentFile() != null) {
-                        // 创建文件夹
-                        outFile.getParentFile().mkdirs();
-                    }
-                    // 文件输出保存到目录
-                    fileOutputStream = new FileOutputStream(outFile);
-                    InputStream inputStream = file.getInputStream();
-                    IOUtils.copy(inputStream, fileOutputStream);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (fileOutputStream != null) {
-                        fileOutputStream.flush();
-                        fileOutputStream.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        } else {
-            return ResponseResult.errorMsg("文件不能为空！");
+        String finalUserFaceUrl = uploadService.upload(file);
+        if (StringUtils.isBlank(finalUserFaceUrl)){
+            return ResponseResult.errorMsg("头像图片上传失败");
         }
-
-        // 获取图片服务地址
-        String imageServerUrl = fileUpload.getImageServerUrl();
-
-        // 由于浏览器可能存在缓存的情况，所以在这里，我们需要加上时间戳来保证更新后的图片可以及时刷新
-        String finalUserFaceUrl = imageServerUrl + uploadPathPrefix
-                + "?t=" + DateUtil.getCurrentDateString(DateUtil.DATE_PATTERN);
-
-        // 更新用户头像到数据库
         Users userResult = centerUserService.updateUserFace(userId, finalUserFaceUrl);
-
         userResult = setNullProperty(userResult);
         CookieUtils.setCookie(request, response, "user",
                 JsonUtils.objectToJson(userResult), true);
         // TODO 后续要改，增加令牌token，会整合进redis，分布式会话
-        return ResponseResult.ok();
+        return ResponseResult.ok("头像上传成功",finalUserFaceUrl);
     }
 
 

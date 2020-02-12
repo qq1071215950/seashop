@@ -1,6 +1,13 @@
 package com.haojing.service.impl;
 
+import com.haojing.entity.Users;
+import com.haojing.result.ResponseResult;
 import com.haojing.service.UploadService;
+import com.haojing.utlis.CookieUtils;
+import com.haojing.utlis.DateUtil;
+import com.haojing.utlis.JsonUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -11,6 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,6 +39,7 @@ public class UploadServiceImpl implements UploadService {
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public String upload(MultipartFile file) {
+
         try {
             // 1、图片信息校验
             // 1)校验文件类型
@@ -45,17 +56,20 @@ public class UploadServiceImpl implements UploadService {
             }
             // 2、保存图片
             // 2.1、生成保存目录
-            File dir = new File("C:\\workspaces\\images\\seashop\\upload");
+            File dir = new File("C:\\opt\\plate");
             if (!dir.exists()) {
                 dir.mkdirs();
             }
+            String newFileName = System.currentTimeMillis() + file.getOriginalFilename();
             // 2.2、保存图片
-            file.transferTo(new File(dir, file.getOriginalFilename()));
+            file.transferTo(new File(dir, newFileName));
             // 2.3、拼接图片地址
-            String url = "http://www.jiange.com/upload/"+ file.getOriginalFilename();
+            String url = "http://www.seashop.com"+"/"+ newFileName;
             return url;
         } catch (Exception e) {
             throw new RuntimeException("上传失败，系统出了点问题");
         }
+
+
     }
 }
