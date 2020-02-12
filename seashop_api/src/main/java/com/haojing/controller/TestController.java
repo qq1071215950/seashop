@@ -17,3 +17,7 @@ public class TestController {
         return "hello world";
     }
 }
+// todo 引入redis
+// todo 静态资源地 访问
+// todo 权限的拦截
+// todo 全局错误显示

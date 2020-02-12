@@ -2,13 +2,15 @@ package com.haojing.entity;
 
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 商品图片对象
  */
 @Table(name = "items_img")
-public class ItemsImg {
+public class ItemsImg implements Serializable {
+    private static final long serialVersionUID = -7738565030931610058L;
     /**
      * 图片主键
      */

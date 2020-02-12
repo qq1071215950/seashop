@@ -1,12 +1,14 @@
 package com.haojing.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 商品对象
  */
-public class Items {
+public class Items implements Serializable {
+    private static final long serialVersionUID = 8186603431743192275L;
     /**
      * 商品主键id
      */

@@ -24,9 +24,11 @@ import com.haojing.vo.ShopcartVO;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
@@ -48,12 +50,22 @@ public class ItemServiceImpl implements ItemService {
     private ItemsMapperCustom itemsMapperCustom;
     @Autowired
     private Sid sid;
-
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public ItemsCustom queryItemById(String itemId) {
-        Items items = itemsMapper.selectByPrimaryKey(itemId);
+        // 1 先从缓存中查询
+        Items items = (Items) redisTemplate.opsForValue().get("item"+itemId);
+        System.out.println("从缓存中获取");
+        if (items == null){
+            // 2 从数据库中获取
+            items = itemsMapper.selectByPrimaryKey(itemId);
+            System.out.println("从数据库中获取");
+            // todo 注意该处涉及到网路传输，所以保存的对象需要实现序列化。
+            redisTemplate.opsForValue().set("item"+itemId, items);
+        }
         ItemsCustom itemsCustom = new ItemsCustom();
         BeanUtils.copyProperties(items,itemsCustom);
         return itemsCustom;
@@ -63,10 +75,16 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<ItemsImgCustom> queryItemImgList(String itemId) {
-        Example itemsImgExp = new Example(ItemsImg.class);
-        Example.Criteria criteria = itemsImgExp.createCriteria();
-        criteria.andEqualTo("itemId", itemId);
-        List<ItemsImg> itemsImgs = itemsImgMapper.selectByExample(itemsImgExp);
+        List<ItemsImg> itemsImgs = (List<ItemsImg>) redisTemplate.opsForValue().get("img"+itemId);
+        System.out.println("图片从缓存中获取");
+        if (CollectionUtils.isEmpty(itemsImgs)){
+            Example itemsImgExp = new Example(ItemsImg.class);
+            Example.Criteria criteria = itemsImgExp.createCriteria();
+            criteria.andEqualTo("itemId", itemId);
+            itemsImgs = itemsImgMapper.selectByExample(itemsImgExp);
+            System.out.println("图片从数据库中获取");
+            redisTemplate.opsForValue().set("img"+itemId, itemsImgs);
+        }
         List<ItemsImgCustom> list = itemsImgs.stream().map(x -> {
             ItemsImgCustom itemsImgCustom = new ItemsImgCustom();
             BeanUtils.copyProperties(x, itemsImgCustom);
@@ -78,10 +96,16 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public List<ItemsSpecCustom> queryItemSpecList(String itemId) {
-        Example itemsSpecExp = new Example(ItemsSpec.class);
-        Example.Criteria criteria = itemsSpecExp.createCriteria();
-        criteria.andEqualTo("itemId", itemId);
-        List<ItemsSpec> itemsSpecs = itemsSpecMapper.selectByExample(itemsSpecExp);
+        List<ItemsSpec> itemsSpecs = (List<ItemsSpec>) redisTemplate.opsForValue().get("spc"+itemId);
+        System.out.println("商品规格数据从缓存中获取");
+        if (CollectionUtils.isEmpty(itemsSpecs)){
+            Example itemsSpecExp = new Example(ItemsSpec.class);
+            Example.Criteria criteria = itemsSpecExp.createCriteria();
+            criteria.andEqualTo("itemId", itemId);
+            itemsSpecs = itemsSpecMapper.selectByExample(itemsSpecExp);
+            System.out.println("商品规格数据从数据库中获取");
+            redisTemplate.opsForValue().set("spc"+itemId, itemsSpecs);
+        }
         List<ItemsSpecCustom> list = itemsSpecs.stream().map(x -> {
             ItemsSpecCustom itemsSpecCustom = new ItemsSpecCustom();
             BeanUtils.copyProperties(x, itemsSpecCustom);
@@ -93,10 +117,16 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(propagation = Propagation.SUPPORTS)
     @Override
     public ItemsParamCustom queryItemParam(String itemId) {
-        Example itemsParamExp = new Example(ItemsParam.class);
-        Example.Criteria criteria = itemsParamExp.createCriteria();
-        criteria.andEqualTo("itemId", itemId);
-        ItemsParam itemsParam = itemsParamMapper.selectOneByExample(itemsParamExp);
+        ItemsParam itemsParam = (ItemsParam) redisTemplate.opsForValue().get("parm"+itemId);
+        System.out.println("商品参数从缓存中获取");
+        if (itemsParam == null){
+            Example itemsParamExp = new Example(ItemsParam.class);
+            Example.Criteria criteria = itemsParamExp.createCriteria();
+            criteria.andEqualTo("itemId", itemId);
+            itemsParam = itemsParamMapper.selectOneByExample(itemsParamExp);
+            System.out.println("商品参数从数据库中获取");
+            redisTemplate.opsForValue().set("parm"+itemId, itemsParam);
+        }
         ItemsParamCustom itemsParamCustom = new ItemsParamCustom();
         BeanUtils.copyProperties(itemsParam,itemsParamCustom);
         return itemsParamCustom;
@@ -115,7 +145,6 @@ public class ItemServiceImpl implements ItemService {
         countsVO.setGoodCounts(goodCounts);
         countsVO.setNormalCounts(normalCounts);
         countsVO.setBadCounts(badCounts);
-
         return countsVO;
     }
 
@@ -231,6 +260,10 @@ public class ItemServiceImpl implements ItemService {
                 items.setOnOffStatus(2);
                 items.setUpdatedTime(new Date());
                 itemsMapper.updateByPrimaryKeySelective(items);
+                redisTemplate.delete("item"+itemsId);
+                redisTemplate.delete("img"+itemsId);
+                redisTemplate.delete("spc"+itemsId);
+                redisTemplate.delete("parm"+itemsId);
             }
         }
 

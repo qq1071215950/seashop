@@ -2,13 +2,15 @@ package com.haojing.entity;
 
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * 商品参数对象
  */
 @Table(name = "items_param")
-public class ItemsParam {
+public class ItemsParam implements Serializable {
+    private static final long serialVersionUID = 2467947600238977928L;
     /**
      * 商品参数id
      */

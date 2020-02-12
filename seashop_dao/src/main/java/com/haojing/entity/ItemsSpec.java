@@ -1,6 +1,7 @@
 package com.haojing.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -8,7 +9,8 @@ import java.util.Date;
  * 商品规格对象
  */
 @Table(name = "items_spec")
-public class ItemsSpec {
+public class ItemsSpec implements Serializable {
+    private static final long serialVersionUID = 4130003403323448963L;
     /**
      * 商品规格id
      */

@@ -41,7 +41,6 @@ public class ItemsController extends BaseController {
         if (StringUtils.isBlank(itemId)) {
             return ResponseResult.errorMsg("商品id为空");
         }
-
         ItemsCustom item = itemService.queryItemById(itemId);
         List<ItemsImgCustom> itemImgList = itemService.queryItemImgList(itemId);
         List<ItemsSpecCustom> itemsSpecList = itemService.queryItemSpecList(itemId);
