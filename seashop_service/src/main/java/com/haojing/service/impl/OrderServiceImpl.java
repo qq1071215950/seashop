@@ -16,6 +16,7 @@ import com.haojing.service.AddressService;
 import com.haojing.service.ItemService;
 import com.haojing.service.OrderService;
 import com.haojing.service.center.MyOrdersService;
+import com.haojing.utlis.DateUtil;
 import com.haojing.vo.MerchantOrdersVO;
 import com.haojing.vo.MyOrdersVO;
 import com.haojing.vo.OrderVO;
@@ -197,6 +198,34 @@ public class OrderServiceImpl implements OrderService {
         List<MyOrdersVO> list = ordersMapperCustom.queryOrders(map);
         return setterPagedGrid(list, page);
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public void closeOrder() {
+        // 查询所有未付款订单，判断时间是否超时（1天），超时则关闭交易
+        OrderStatus queryOrder = new OrderStatus();
+        queryOrder.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> list = orderStatusMapper.select(queryOrder);
+        for (OrderStatus os : list) {
+            // 获得订单创建时间
+            Date createdTime = os.getCreatedTime();
+            // 和当前时间进行对比
+            int days = DateUtil.daysBetween(createdTime, new Date());
+            if (days >= 1) {
+                // 超过1天，关闭订单
+                doCloseOrder(os.getOrderId());
+            }
+        }
+    }
+    @Transactional(propagation = Propagation.REQUIRED)
+    void doCloseOrder(String orderId) {
+        OrderStatus close = new OrderStatus();
+        close.setOrderId(orderId);
+        close.setOrderStatus(OrderStatusEnum.CLOSE.type);
+        close.setCloseTime(new Date());
+        orderStatusMapper.updateByPrimaryKeySelective(close);
+    }
+
     private PagedGridResult setterPagedGrid(List<?> list, Integer page) {
         PageInfo<?> pageList = new PageInfo<>(list);
         PagedGridResult grid = new PagedGridResult();

@@ -48,4 +48,10 @@ public interface OrderService {
      * @return
      */
     PagedGridResult queryOrders(Integer orderStatus, Integer page, Integer pageSize);
+
+
+    /**
+     * 订单交易关闭
+     */
+    void closeOrder();
 }
