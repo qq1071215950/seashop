@@ -1,6 +1,6 @@
 package com.haojing;
 
-import com.haojing.utlis.JwtUtil;
+import com.haojing.fiter.JwtUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

@@ -2,11 +2,11 @@ package com.haojing.controller;
 
 import com.haojing.bo.UserBO;
 import com.haojing.entity.Users;
+import com.haojing.fiter.JwtUtil;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.UserService;
 import com.haojing.utlis.CookieUtils;
 import com.haojing.utlis.JsonUtils;
-import com.haojing.utlis.JwtUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;

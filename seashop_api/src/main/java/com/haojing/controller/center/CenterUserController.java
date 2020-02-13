@@ -3,17 +3,14 @@ package com.haojing.controller.center;
 import com.haojing.bo.center.CenterUserBO;
 import com.haojing.controller.BaseController;
 import com.haojing.entity.Users;
-import com.haojing.resource.FileUpload;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.UploadService;
 import com.haojing.service.center.CenterUserService;
 import com.haojing.utlis.CookieUtils;
-import com.haojing.utlis.DateUtil;
 import com.haojing.utlis.JsonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -24,10 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +35,9 @@ public class CenterUserController extends BaseController {
 
     @Autowired
     private UploadService uploadService;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
     @PostMapping("uploadFace")
@@ -74,6 +70,7 @@ public class CenterUserController extends BaseController {
             BindingResult result,
             HttpServletRequest request, HttpServletResponse response) {
         System.out.println(centerUserBO);
+
         // 判断BindingResult是否保存错误的验证信息，如果有，则直接return
         if (result.hasErrors()) {
             Map<String, String> errorMap = getErrors(result);
