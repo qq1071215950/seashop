@@ -13,6 +13,6 @@ public class ApplicationConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtFilter).addPathPatterns("/**").excludePathPatterns("/**/login","/swagger-ui.html");
+        registry.addInterceptor(jwtFilter).addPathPatterns("/**").excludePathPatterns("/**/login");
     }
 }
