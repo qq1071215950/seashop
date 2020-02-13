@@ -4,6 +4,7 @@ import com.haojing.controller.BaseController;
 import com.haojing.result.PagedGridResult;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.OrderService;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Api(value = "订单管理", tags = {"管理员操作订单管理相关接口"})
@@ -21,12 +23,20 @@ public class AdminOrderController extends BaseController {
 
     @Autowired
     private OrderService orderService;
+    @Autowired
+    private HttpServletRequest request;
 
     @ApiOperation(value = "商家发货", notes = "商家发货批量操作", httpMethod = "POST")
     @PostMapping("/deliver")
     public ResponseResult deliverOrders(
             @ApiParam(name = "orderIds", value = "订单ids", required = true)
             @RequestParam List<String> orderIds) {
+
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         if (CollectionUtils.isEmpty(orderIds)){
             return ResponseResult.errorMsg("订单ids不能为空");
         }
@@ -43,6 +53,11 @@ public class AdminOrderController extends BaseController {
             @RequestParam Integer page,
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         if (page == null) {
             page = 1;
         }

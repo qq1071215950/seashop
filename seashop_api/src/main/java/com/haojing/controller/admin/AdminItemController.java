@@ -6,6 +6,7 @@ import com.haojing.bo.ItemsSpecBO;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.ItemService;
 import com.haojing.service.UploadService;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,6 +16,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Api(value = "商品管理", tags = {"管理员操作商品管理相关接口"})
@@ -29,9 +31,16 @@ public class AdminItemController {
     @Autowired
     private UploadService uploadService;
 
+    @Autowired
+    private HttpServletRequest request;
+
     @ApiOperation(value = "添加商品", notes = "添加上坪", httpMethod = "POST")
     @PostMapping("/addItem")
     public ResponseResult addTtem(@RequestBody ItemBO itemBO) {
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
         if (itemBO == null){
             return ResponseResult.errorMsg("商品信息不能为空");
         }
@@ -76,6 +85,11 @@ public class AdminItemController {
     public ResponseResult uploadPicture(
             @ApiParam(name = "file", value = "商品图片", required = true)
             @RequestParam MultipartFile file) {
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         String url = uploadService.upload(file);
         if (StringUtils.isBlank(url)) {
             // url为空，证明上传失败
@@ -92,6 +106,12 @@ public class AdminItemController {
             @RequestParam List<String> itemIds,
             @ApiParam(name = "type", value = "上下架标志", required = true)
             @RequestParam Integer type) {
+
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         if (CollectionUtils.isEmpty(itemIds)){
             return ResponseResult.errorMsg("商品ids不能为空");
         }

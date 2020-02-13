@@ -5,11 +5,14 @@ import com.haojing.result.ResponseResult;
 import com.haojing.service.CarouselService;
 import com.haojing.service.CategoryService;
 import com.haojing.service.ItemService;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 @Api(value = "首页轮播图", tags = {"管理员操作首页轮播图管理"})
@@ -25,10 +28,18 @@ public class AdminCarouselController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private HttpServletRequest request;
+
 
     @ApiOperation(value = "添加首页轮播", notes = "添加首页轮播对象", httpMethod = "POST")
     @PostMapping("/add")
     public ResponseResult addCarousel(@RequestBody CarouselBO carouselBO) {
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         if (StringUtils.isBlank(carouselBO.getImageUrl()) || StringUtils.isBlank(carouselBO.getItemId())
                 || StringUtils.isBlank(carouselBO.getCatId())) {
             return ResponseResult.errorMsg("轮播信息的图片或者所属商品或者所属分类为空");
@@ -54,6 +65,11 @@ public class AdminCarouselController {
     @ApiOperation(value = "删除首页轮播", notes = "删除首页轮播", httpMethod = "PUT")
     @PutMapping("/delete")
     public ResponseResult deleteCarousel(@RequestParam String carouselId) {
+        Claims claims = (Claims) request.getAttribute("admin_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录,没有权限操作");
+        }
+
         if (StringUtils.isBlank(carouselId)){
             return ResponseResult.errorMsg("请选择分类");
         }
