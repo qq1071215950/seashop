@@ -7,6 +7,7 @@ import com.haojing.result.ResponseResult;
 import com.haojing.service.AddressService;
 import com.haojing.service.UserService;
 import com.haojing.utlis.MobileEmailUtils;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Api(value = "地址相关", tags = {"地址相关的api接口"})
@@ -34,17 +36,18 @@ public class AddressController {
     private AddressService addressService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private HttpServletRequest request;
 
     @ApiOperation(value = "根据用户id查询收货地址列表", notes = "根据用户id查询收货地址列表", httpMethod = "GET")
     @GetMapping("/list")
-    public ResponseResult list(@RequestParam String userId) {
-        if (StringUtils.isBlank(userId)) {
-            return ResponseResult.errorMsg("你还没有登录");
+    public ResponseResult list( ) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
         }
+        String userId = claims.getId();
         Users users = userService.selectById(userId);
-        if (users == null){
-            return ResponseResult.errorMsg("用户不存在");
-        }
         List<UserAddress> list = addressService.queryAll(userId);
         if (CollectionUtils.isEmpty(list) || list.size() == 0){
             return ResponseResult.ok("地址信息为空");
@@ -54,10 +57,12 @@ public class AddressController {
 
     @ApiOperation(value = "根据用户id和地址id查询收货地址详情", notes = "根据用户id和地址id查询收货地址", httpMethod = "GET")
     @GetMapping("/address")
-    public ResponseResult getAddress(@RequestParam String userId, @RequestParam String addressId) {
-        if (StringUtils.isBlank(userId)) {
-            return ResponseResult.errorMsg("你还没有登录");
+    public ResponseResult getAddress( @RequestParam String addressId) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
         }
+        String userId = claims.getId();
         Users users = userService.selectById(userId);
         if (users == null){
             return ResponseResult.errorMsg("用户不存在");
@@ -71,11 +76,17 @@ public class AddressController {
     @ApiOperation(value = "用户新增地址", notes = "用户新增地址", httpMethod = "POST")
     @PostMapping("/add")
     public ResponseResult add(@RequestBody AddressBO addressBO) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
 
         ResponseResult checkRes = checkAddress(addressBO);
         if (checkRes.getStatus() != 200) {
             return checkRes;
         }
+        addressBO.setUserId(userId);
         addressService.addNewUserAddress(addressBO);
 
         return ResponseResult.ok();
@@ -120,6 +131,12 @@ public class AddressController {
     @ApiOperation(value = "用户修改地址", notes = "用户修改地址", httpMethod = "POST")
     @PostMapping("/update")
     public ResponseResult update(@RequestBody AddressBO addressBO) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
+
         if (StringUtils.isBlank(addressBO.getAddressId())) {
             return ResponseResult.errorMsg("修改地址错误：addressId不能为空");
         }
@@ -128,6 +145,7 @@ public class AddressController {
         if (checkRes.getStatus() != 200) {
             return checkRes;
         }
+        addressBO.setUserId(userId);
         addressService.updateUserAddress(addressBO);
         return ResponseResult.ok();
     }
@@ -135,8 +153,12 @@ public class AddressController {
     @ApiOperation(value = "用户删除地址", notes = "用户删除地址", httpMethod = "DELETE")
     @DeleteMapping("/delete")
     public ResponseResult delete(
-            @RequestParam String userId,
             @RequestParam String addressId) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(addressId)) {
             return ResponseResult.errorMsg("");
         }
@@ -148,8 +170,12 @@ public class AddressController {
     @ApiOperation(value = "用户设置默认地址", notes = "用户设置默认地址", httpMethod = "POST")
     @PostMapping("/setDefalut")
     public ResponseResult setDefalut(
-            @RequestParam String userId,
             @RequestParam String addressId) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         if (StringUtils.isBlank(userId) || StringUtils.isBlank(addressId)) {
             return ResponseResult.errorMsg("");
         }

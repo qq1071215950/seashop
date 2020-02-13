@@ -8,6 +8,7 @@ import com.haojing.result.ResponseResult;
 import com.haojing.service.OrderService;
 import com.haojing.vo.MerchantOrdersVO;
 import com.haojing.vo.OrderVO;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 public class OrdersController extends BaseController {
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
     
 
     @ApiOperation(value = "用户下单", notes = "用户下单", httpMethod = "POST")
@@ -32,6 +36,13 @@ public class OrdersController extends BaseController {
             @RequestBody SubmitOrderBO submitOrderBO,
             HttpServletRequest request,
             HttpServletResponse response) {
+        Claims claims = (Claims) httpServletRequest.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
+        submitOrderBO.setUserId(userId);
+
         if (submitOrderBO.getPayMethod() != PayMethod.WEIXIN.type
                 && submitOrderBO.getPayMethod() != PayMethod.ALIPAY.type ) {
             return ResponseResult.errorMsg("支付方式不支持！");
