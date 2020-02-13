@@ -28,13 +28,12 @@ public class CenterController {
     
     @ApiOperation(value = "获取用户信息", notes = "获取用户信息", httpMethod = "GET")
     @GetMapping("userInfo")
-    public ResponseResult userInfo(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId) {
+    public ResponseResult userInfo() {
         Claims claims = (Claims) request.getAttribute("user_claims");
         if (claims == null){
             return ResponseResult.errorMsg("您还没有登录");
         }
+        String userId = claims.getId();
         Users user = centerUserService.queryUserInfo(userId);
         if (user == null){
             return ResponseResult.ok("用户信息不存在");

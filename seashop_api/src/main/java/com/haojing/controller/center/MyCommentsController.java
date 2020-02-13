@@ -9,6 +9,7 @@ import com.haojing.result.PagedGridResult;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.center.MyCommentsService;
 import com.haojing.service.center.MyOrdersService;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Api(value = "用户中心评价模块", tags = {"用户中心评价模块相关接口"})
@@ -31,15 +33,20 @@ public class MyCommentsController extends BaseController {
     @Autowired
     public MyOrdersService myOrdersService;
 
+    @Autowired
+    private HttpServletRequest request;
+
 
     @ApiOperation(value = "查询订单评论列表", notes = "查询订单列表", httpMethod = "GET")
     @GetMapping("/pending")
     public ResponseResult pending(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "orderId", value = "订单id", required = true)
             @RequestParam String orderId) {
-
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         // 判断用户和订单是否关联
         Orders order = myOrdersService.queryMyOrder(userId, orderId);
         if (order == null) {
@@ -60,14 +67,16 @@ public class MyCommentsController extends BaseController {
     @ApiOperation(value = "保存评论列表", notes = "保存评论列表", httpMethod = "POST")
     @PostMapping("/saveList")
     public ResponseResult saveList(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "orderId", value = "订单id", required = true)
             @RequestParam String orderId,
             @RequestBody List<OrderItemsCommentBO> commentList) {
 
         System.out.println(commentList);
-
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         // 判断用户和订单是否关联
         Orders order = myOrdersService.queryMyOrder(userId, orderId);
         if (order == null) {
@@ -84,13 +93,15 @@ public class MyCommentsController extends BaseController {
     @ApiOperation(value = "查询我的评价", notes = "查询我的评价", httpMethod = "GET")
     @GetMapping("/query")
     public ResponseResult query(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
             @RequestParam Integer page,
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
-
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         if (StringUtils.isBlank(userId)) {
             return ResponseResult.errorMsg(null);
         }

@@ -6,28 +6,35 @@ import com.haojing.result.PagedGridResult;
 import com.haojing.result.ResponseResult;
 import com.haojing.service.center.MyOrdersService;
 import com.haojing.vo.OrderStatusCountsVO;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Api(value = "用户中心我的订单", tags = {"用户中心我的订单相关接口"})
 @RestController
 @RequestMapping("myorders")
 public class MyOrdersController extends BaseController {
-
     @Autowired
     private MyOrdersService myOrdersService;
+    @Autowired
+    private HttpServletRequest request;
 
     @ApiOperation(value = "获得订单状态数概况", notes = "获得订单状态数概况", httpMethod = "GET")
     @GetMapping("/statusCounts")
-    public ResponseResult statusCounts(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId) {
+    public ResponseResult statusCounts() {
+
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         if (StringUtils.isBlank(userId)) {
             return ResponseResult.errorMsg(null);
         }
@@ -38,8 +45,6 @@ public class MyOrdersController extends BaseController {
     @ApiOperation(value = "查询订单列表", notes = "查询订单列表", httpMethod = "GET")
     @GetMapping("/query")
     public ResponseResult query(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "orderStatus", value = "订单状态", required = false)
             @RequestParam Integer orderStatus,
             @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
@@ -47,6 +52,11 @@ public class MyOrdersController extends BaseController {
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
 
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         if (StringUtils.isBlank(userId)) {
             return ResponseResult.errorMsg(null);
         }
@@ -79,9 +89,13 @@ public class MyOrdersController extends BaseController {
     @PostMapping("/confirmReceive")
     public ResponseResult confirmReceive(
             @ApiParam(name = "orderId", value = "订单id", required = true)
-            @RequestParam String orderId,
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId) throws Exception {
+            @RequestParam String orderId) throws Exception {
+
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
 
         Orders order = myOrdersService.queryMyOrder(userId, orderId);
         if (order == null) {
@@ -98,9 +112,13 @@ public class MyOrdersController extends BaseController {
     @PostMapping("/delete")
     public ResponseResult delete(
             @ApiParam(name = "orderId", value = "订单id", required = true)
-            @RequestParam String orderId,
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId) throws Exception {
+            @RequestParam String orderId) throws Exception {
+
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         Orders order = myOrdersService.queryMyOrder(userId, orderId);
         if (order == null) {
             return ResponseResult.errorMsg("订单不存在！");
@@ -118,12 +136,16 @@ public class MyOrdersController extends BaseController {
     @ApiOperation(value = "查询订单动向", notes = "查询订单动向", httpMethod = "POST")
     @PostMapping("/trend")
     public ResponseResult trend(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "page", value = "查询下一页的第几页", required = false)
             @RequestParam Integer page,
             @ApiParam(name = "pageSize", value = "分页的每一页显示的条数", required = false)
             @RequestParam Integer pageSize) {
+
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
 
         if (StringUtils.isBlank(userId)) {
             return ResponseResult.errorMsg(null);

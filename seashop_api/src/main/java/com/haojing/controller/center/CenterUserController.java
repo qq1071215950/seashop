@@ -8,6 +8,7 @@ import com.haojing.service.UploadService;
 import com.haojing.service.center.CenterUserService;
 import com.haojing.utlis.CookieUtils;
 import com.haojing.utlis.JsonUtils;
+import io.jsonwebtoken.Claims;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -42,11 +43,14 @@ public class CenterUserController extends BaseController {
     @ApiOperation(value = "用户头像修改", notes = "用户头像修改", httpMethod = "POST")
     @PostMapping("uploadFace")
     public ResponseResult uploadFace(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @ApiParam(name = "file", value = "用户头像", required = true)
                     MultipartFile file,
             HttpServletRequest request, HttpServletResponse response) {
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         String finalUserFaceUrl = uploadService.upload(file);
         if (StringUtils.isBlank(finalUserFaceUrl)){
             return ResponseResult.errorMsg("头像图片上传失败");
@@ -64,13 +68,16 @@ public class CenterUserController extends BaseController {
     @ApiOperation(value = "修改用户信息", notes = "修改用户信息", httpMethod = "POST")
     @PostMapping("update")
     public ResponseResult update(
-            @ApiParam(name = "userId", value = "用户id", required = true)
-            @RequestParam String userId,
             @RequestBody @Valid CenterUserBO centerUserBO,
             BindingResult result,
             HttpServletRequest request, HttpServletResponse response) {
         System.out.println(centerUserBO);
 
+        Claims claims = (Claims) request.getAttribute("user_claims");
+        if (claims == null){
+            return ResponseResult.errorMsg("您还没有登录");
+        }
+        String userId = claims.getId();
         // 判断BindingResult是否保存错误的验证信息，如果有，则直接return
         if (result.hasErrors()) {
             Map<String, String> errorMap = getErrors(result);
@@ -110,6 +117,5 @@ public class CenterUserController extends BaseController {
         userResult.setBirthday(null);
         return userResult;
     }
-
 
 }
