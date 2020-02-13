@@ -6,6 +6,7 @@ import com.haojing.result.ResponseResult;
 import com.haojing.service.UserService;
 import com.haojing.utlis.CookieUtils;
 import com.haojing.utlis.JsonUtils;
+import com.haojing.utlis.JwtUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 @Api(value = "注册登录", tags = {"用于注册登录的相关接口"})
 @RestController
@@ -23,6 +26,10 @@ public class PassportController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     @ApiOperation(value = "用户名是否存在", notes = "用户名是否存在", httpMethod = "GET")
     @GetMapping("/usernameIsExist")
@@ -103,18 +110,25 @@ public class PassportController {
         }
         // 1. 实现登录
         Users userResult = userService.queryUserForLogin(username, password);
-        if (userResult == null) {
-            return ResponseResult.errorMsg("用户名或密码不正确");
+        String token = null;
+        if (userResult != null) {
+            if (userResult.getType() == 1){
+                token = jwtUtil.createJWT(userResult.getId(), userResult.getNickname(), "user");
+            }
+           if (userResult.getType() == 2){
+               token = jwtUtil.createJWT(userResult.getId(), userResult.getNickname(), "admin");
+
+           }
+            Map map = new HashMap();
+            map.put("token", token);
+            map.put("name", userResult.getNickname());
+            map.put("avatar", userResult.getFace());
+            return ResponseResult.ok( "登陆成功", map);
+        } else {
+            return ResponseResult.errorMsg("用户名或密码错误");
         }
-
-        userResult = setNullProperty(userResult);
-
-        CookieUtils.setCookie(request, response, "user",
-                JsonUtils.objectToJson(userResult), true);
         // TODO 生成用户token，存入redis会话
         // TODO 同步购物车数据
-
-        return ResponseResult.ok(userResult);
     }
 
     private Users setNullProperty(Users userResult) {

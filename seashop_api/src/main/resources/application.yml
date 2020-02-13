@@ -55,3 +55,7 @@ pagehelper:
 logging:
   level:
     com.haojing.mapper: DEBUG
+jwt:
+  config:
+    key: itcast
+    ttl: 360000
